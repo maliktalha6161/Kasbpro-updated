@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · System</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="common.js"></script>
+    <style>
+        .sys-grid { display: grid; gap: 22px; }
+        .panel { padding: 18px 22px; }
+        .panel h3 { color: #1e3a8a; font-weight: 800; font-size: 1rem; margin-bottom: 14px; }
+        .action-pill {
+            background: #10b981; color: #fff; border: none; padding: 11px 18px;
+            border-radius: 10px; font-weight: 700; cursor: pointer; font-size: .9rem;
+        }
+        .action-pill:hover { filter: brightness(.95); }
+        .mono { font-family: 'Courier New', monospace; font-size: .82rem; color: #475569; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html" class="logo-container">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <ul class="nav-menu-upper">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="inventory.html" class="nav-link"><i class="fas fa-boxes-stacked nav-icon"></i><span class="link-text">Inventory</span></a></li>
+                <li class="nav-item"><a href="customers.html" class="nav-link"><i class="fas fa-users nav-icon"></i><span class="link-text">Customers</span></a></li>
+                <li class="nav-item"><a href="suppliers.html" class="nav-link"><i class="fas fa-truck nav-icon"></i><span class="link-text">Suppliers</span></a></li>
+                <li class="nav-item"><a href="billing.html" class="nav-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="link-text">Billing</span></a></li>
+                <li class="nav-item"><a href="reports.html" class="nav-link"><i class="fas fa-file-chart-column nav-icon"></i><span class="link-text">Reports</span></a></li>
+                <li class="nav-item"><a href="ai-assistant.html" class="nav-link"><i class="fas fa-robot nav-icon"></i><span class="link-text">AI Assistant</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <ul class="nav-menu-lower">
+                    <li class="nav-item active" data-role="owner">
+                        <a href="system.html" class="nav-link">
+                            <i class="fas fa-shield-halved nav-icon"></i>
+                            <span class="link-text">System</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="user-profile-info">
+                    <div class="user-avatar-circle js-user-initial">U</div>
+                    <div>
+                        <p class="user-name js-user-name">User</p>
+                        <p class="user-role js-user-role">Role</p>
+                    </div>
+                </div>
+                <button type="button" class="logout-button" onclick="logout()">
+                    <i class="fas fa-right-from-bracket logout-icon"></i>
+                    <span class="link-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">System Maintenance</h1>
+                    <p class="page-sub">Users, audit trail and backups — Owner tools (FR-07).</p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-pill" id="btnBackup"><i class="fas fa-database"></i> Run Backup</button>
+                    <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
+
+            <div class="sys-grid">
+
+                <div class="card panel">
+                    <h3><i class="fas fa-user-shield"></i> Users</h3>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="usersTable">
+                            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+                            <tbody id="usersBody">
+                                <tr><td colspan="5" style="padding:30px;text-align:center;color:#94a3b8;">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card panel">
+                    <h3><i class="fas fa-clock-rotate-left"></i> Audit Log <span style="font-weight:400;color:#94a3b8;font-size:.8rem;">(latest 100 actions)</span></h3>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="auditTable">
+                            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Table</th><th>Record</th><th>Details</th></tr></thead>
+                            <tbody id="auditBody">
+                                <tr><td colspan="6" style="padding:30px;text-align:center;color:#94a3b8;">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+    function actionPill(a) {
+        const c = {
+            CREATE:'green', UPDATE:'blue', DELETE:'red', ARCHIVE:'yellow',
+            BACKUP:'blue', SEED:'blue'
+        }[a] || 'blue';
+        return `<span class="pill ${c}">${escapeHtml(a)}</span>`;
+    }
+    function rolePill(r) {
+        return `<span class="pill ${r === 'admin' ? 'blue' : 'green'}">${escapeHtml(r)}</span>`;
+    }
+
+    async function deleteUser(user, row) {
+        const ok = await kasbpro_confirm('Are you sure you want to remove this user?');
+        if (!ok) return;
+        try {
+            await api('/api/users/' + user.id, { method:'DELETE' });
+            row.remove();
+            kasbpro_toast('User removed', 'ok');
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    async function loadUsers() {
+        const body = document.getElementById('usersBody');
+        try {
+            const d = await api('/api/users');
+            const u = d.users || [];
+            body.innerHTML = u.length ? u.map(x => `
+                <tr data-user-id="${x.id}">
+                    <td><strong>${escapeHtml(x.full_name)}</strong></td>
+                    <td>${escapeHtml(x.email)}</td>
+                    <td>${rolePill(x.role)}</td>
+                    <td class="mono">${escapeHtml(x.created_at || '—')}</td>
+                    <td><button class="btn-icon-sm danger" data-role="owner" data-act="delete-user" title="Remove user"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('')
+                : '<tr><td colspan="5" style="padding:30px;text-align:center;color:#94a3b8;">No users.</td></tr>';
+            kasbpro_applyRoleUI();
+        } catch (e) {
+            body.innerHTML = `<tr><td colspan="5" style="padding:30px;text-align:center;color:#dc2626;">${escapeHtml(e.message)}</td></tr>`;
+        }
+    }
+
+    async function loadAudit() {
+        const body = document.getElementById('auditBody');
+        try {
+            const d = await api('/api/audit-log');
+            const log = d.log || [];
+            body.innerHTML = log.length ? log.map(r => `
+                <tr>
+                    <td class="mono">${escapeHtml(r.created_at || '—')}</td>
+                    <td>${escapeHtml(r.user_email || '—')}</td>
+                    <td>${actionPill(r.action)}</td>
+                    <td>${escapeHtml(r.table_name || '—')}</td>
+                    <td>${r.record_id == null ? '—' : escapeHtml(r.record_id)}</td>
+                    <td style="font-size:.83rem;color:#475569;">${escapeHtml(r.details || '')}</td>
+                </tr>`).join('')
+                : '<tr><td colspan="6" style="padding:30px;text-align:center;color:#94a3b8;">No audit entries.</td></tr>';
+        } catch (e) {
+            body.innerHTML = `<tr><td colspan="6" style="padding:30px;text-align:center;color:#dc2626;">${escapeHtml(e.message)}</td></tr>`;
+        }
+    }
+
+    async function runBackup() {
+        try {
+            const r = await api('/api/system/backup', { method:'POST' });
+            kasbpro_toast('Backup saved: ' + r.file, 'ok');
+            loadAudit();   // refresh — backup writes an audit row
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    /* Boot */
+    (async () => {
+        const ok = await kasbpro_hydrateSession();
+        if (!ok) return kasbpro_requireAuth();
+        if (kasbpro_currentRole() !== KASBPRO_ROLES.OWNER) {
+            alert('This area is restricted to Owners.');
+            window.location.replace('dashboard.html');
+            return;
+        }
+        kasbpro_applyRoleUI();
+
+        document.getElementById('btnBackup').addEventListener('click', runBackup);
+
+        document.getElementById('usersBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-act="delete-user"]');
+            if (!btn) return;
+            const row = btn.closest('tr');
+            const userId = Number(row.dataset.userId);
+            const user = { id: userId, email: row.cells[1].textContent.trim() };
+            deleteUser(user, row);
+        });
+
+        const t = document.getElementById('mobileToggle');
+        const s = document.getElementById('sidebar');
+        if (t && s) t.addEventListener('click', () => s.classList.toggle('active'));
+
+        loadUsers();
+        loadAudit();
+    })();
+    </script>
+</body>
+</html>

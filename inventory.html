@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · Inventory</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="common.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html" class="logo-container">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <ul class="nav-menu-upper">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li class="nav-item active"><a href="inventory.html" class="nav-link"><i class="fas fa-boxes-stacked nav-icon"></i><span class="link-text">Inventory</span></a></li>
+                <li class="nav-item"><a href="customers.html" class="nav-link"><i class="fas fa-users nav-icon"></i><span class="link-text">Customers</span></a></li>
+                <li class="nav-item"><a href="suppliers.html" class="nav-link"><i class="fas fa-truck nav-icon"></i><span class="link-text">Suppliers</span></a></li>
+                <li class="nav-item"><a href="billing.html" class="nav-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="link-text">Billing</span></a></li>
+                <li class="nav-item"><a href="reports.html" class="nav-link"><i class="fas fa-file-chart-column nav-icon"></i><span class="link-text">Reports</span></a></li>
+                <li class="nav-item"><a href="ai-assistant.html" class="nav-link"><i class="fas fa-robot nav-icon"></i><span class="link-text">AI Assistant</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-info">
+                    <div class="user-avatar-circle js-user-initial">U</div>
+                    <div>
+                        <p class="user-name js-user-name">User</p>
+                        <p class="user-role js-user-role">Role</p>
+                    </div>
+                </div>
+                <button class="logout-button" onclick="logout()">
+                    <i class="fas fa-right-from-bracket logout-icon"></i>
+                    <span class="link-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Inventory</h1>
+                    <p class="page-sub">Track stock, manage products, and monitor low-stock alerts (FR-02).</p>
+                </div>
+                <div class="header-actions">
+                    <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="stats-row" id="invStats">
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Total Products</p><h2 class="stat-value" id="statProducts">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Low Stock</p><h2 class="stat-value" id="statLow">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Out of Stock</p><h2 class="stat-value" id="statOut">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Inventory Value</p><h2 class="stat-value" id="statValue">—</h2></div></div>
+            </section>
+
+            <div class="page-action-bar">
+                <input type="text" class="search-pill" placeholder="Search products by name or SKU..." id="productSearch">
+                <button class="btn-primary" data-role="admin,owner" id="btnAddProduct">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
+            </div>
+
+            <section class="card" data-role="admin,owner" style="padding:20px 24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+                    <div>
+                        <h3 class="card-title">Product Categories</h3>
+                        <p style="color:#64748b;font-size:.82rem;margin-top:4px;">Manage the categories available in product forms.</p>
+                    </div>
+                    <form id="categoryForm" style="display:flex;gap:8px;align-items:center;">
+                        <input id="categoryName" type="text" maxlength="60" placeholder="New category" required
+                               style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:.88rem;">
+                        <button class="btn-primary" type="submit"><i class="fas fa-plus"></i> Add</button>
+                    </form>
+                </div>
+                <div id="categoryList" style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <span style="color:#94a3b8;font-size:.85rem;">Loading categories...</span>
+                </div>
+            </section>
+
+            <div class="card" style="margin-bottom: 0;">
+                <div class="data-table-wrap">
+                    <table class="data-table" id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th data-role="admin,owner">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invBody">
+                            <tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;">Loading inventory…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+    let CATEGORIES = [];
+    let ALL_SUPPLIERS = [];
+    let SUPPLIER_OPTIONS = ['No supplier / one-time'];
+
+    function renderCategories() {
+        const list = document.getElementById('categoryList');
+        if (!CATEGORIES.length) {
+            list.innerHTML = '<span style="color:#94a3b8;font-size:.85rem;">No categories yet.</span>';
+            return;
+        }
+        list.innerHTML = CATEGORIES.map(category => `
+            <span style="display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;color:#334155;padding:7px 10px;border-radius:8px;font-size:.84rem;">
+                ${escapeHtml(category.name)}
+                <button type="button" class="btn-icon-sm danger" data-role="owner" data-category-id="${category.id}" data-category-name="${escapeHtml(category.name)}" title="Delete category">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </span>
+        `).join('');
+        kasbpro_applyRoleUI();
+    }
+
+    async function loadCategories() {
+        const data = await api('/api/categories');
+        CATEGORIES = data.categories || [];
+        renderCategories();
+    }
+
+    async function addCategory(event) {
+        event.preventDefault();
+        const input = document.getElementById('categoryName');
+        const name = input.value.trim();
+        if (!name) return;
+        try {
+            await api('/api/categories', { method:'POST', body:{ name } });
+            input.value = '';
+            await loadCategories();
+            kasbpro_toast('Category added', 'ok');
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    async function deleteCategory(id, name) {
+        const ok = await kasbpro_confirm(`Delete category "${name}"?`);
+        if (!ok) return;
+        try {
+            await api('/api/categories/' + id, { method:'DELETE' });
+            await loadCategories();
+            kasbpro_toast('Category deleted', 'ok');
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    function categoryOptions() {
+        return CATEGORIES.map(category => category.name);
+    }
+
+    function defaultCategory() {
+        return CATEGORIES.find(category => category.name === 'General')?.name
+            || CATEGORIES[0]?.name || 'Other';
+    }
+
+    async function loadSuppliers() {
+        const data = await api('/api/suppliers');
+        ALL_SUPPLIERS = data.suppliers || [];
+        SUPPLIER_OPTIONS = ['No supplier / one-time', ...ALL_SUPPLIERS.map(s => `${s.id} · ${s.name}`)];
+    }
+
+    function supplierOptionFor(id) {
+        if (id == null) return 'No supplier / one-time';
+        const supplier = ALL_SUPPLIERS.find(s => s.id === +id);
+        return supplier ? `${supplier.id} · ${supplier.name}` : 'No supplier / one-time';
+    }
+
+    function supplierIdFromOption(value) {
+        return value === 'No supplier / one-time' ? null : value.split(' · ')[0];
+    }
+
+    function statusPill(p) {
+        if (p.stock === 0)               return '<span class="pill red">Out of stock</span>';
+        if (p.stock <= p.low_stock_threshold) return '<span class="pill yellow">Low stock</span>';
+        return '<span class="pill green">In stock</span>';
+    }
+
+    function renderRows(products) {
+        const body = document.getElementById('invBody');
+        if (!products.length) {
+            body.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;">No products match your search.</td></tr>';
+            return;
+        }
+        body.innerHTML = products.map(p => `
+            <tr data-id="${p.id}">
+                <td><strong>${escapeHtml(p.name)}</strong><div style="font-size:.75rem;color:#94a3b8;">${escapeHtml(p.sku || '—')}</div></td>
+                <td>${escapeHtml(p.category)}</td>
+                <td>Rs ${(+p.price).toFixed(2)}</td>
+                <td>${p.stock}</td>
+                <td>${statusPill(p)}</td>
+                <td data-role="admin,owner">
+                    <div class="row-actions">
+                        <button class="btn-icon-sm" data-role="admin,owner" title="Edit"   data-act="edit"><i class="fas fa-pen"></i></button>
+                        <button class="btn-icon-sm danger" data-role="owner" title="Delete" data-act="delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        kasbpro_applyRoleUI();
+    }
+
+    function renderStats(products) {
+        const total = products.length;
+        const low   = products.filter(p => p.stock > 0 && p.stock <= p.low_stock_threshold).length;
+        const out   = products.filter(p => p.stock === 0).length;
+        const value = products.reduce((s,p) => s + p.price * p.stock, 0);
+        document.getElementById('statProducts').textContent = total;
+        document.getElementById('statLow').textContent = low;
+        document.getElementById('statOut').textContent = out;
+        document.getElementById('statValue').textContent = 'Rs ' + Math.round(value).toLocaleString();
+    }
+
+    let ALL_PRODUCTS = [];
+    async function loadProducts() {
+        try {
+            const data = await api('/api/products');
+            ALL_PRODUCTS = data.products;
+            renderStats(ALL_PRODUCTS);
+            applySearch();
+        } catch (e) {
+            kasbpro_toast(e.message, 'err');
+        }
+    }
+    function applySearch() {
+        const q = document.getElementById('productSearch').value.toLowerCase().trim();
+        const filtered = ALL_PRODUCTS.filter(p =>
+            !q || p.name.toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q)
+        );
+        renderRows(filtered);
+    }
+
+    async function addProduct() {
+        const v = await kasbpro_modal({
+            title: 'Add Product',
+            submit: 'Create',
+            fields: [
+                { name:'name',     label:'Product Name', type:'text',   required:true },
+                { name:'sku',      label:'SKU',          type:'text' },
+                { name:'category', label:'Category',     type:'select', options: categoryOptions() },
+                { name:'price',    label:'Price (Rs)',   type:'number', required:true, step:'0.01', min:0 },
+                { name:'stock',    label:'Initial Stock',type:'number', required:true, min:0 },
+                { name:'low_stock_threshold', label:'Low-stock threshold', type:'number', min:0 },
+                { name:'supplier_id', label:'Supplier', type:'select', options: SUPPLIER_OPTIONS }
+            ],
+            initial: { category:defaultCategory(), low_stock_threshold: 10 }
+        });
+        if (!v) return;
+        v.supplier_id = supplierIdFromOption(v.supplier_id);
+        try {
+            await api('/api/products', { method:'POST', body: v });
+            kasbpro_toast('Product added', 'ok');
+            loadProducts();
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    async function editProduct(p) {
+        const v = await kasbpro_modal({
+            title: 'Edit Product',
+            submit: 'Save changes',
+            fields: [
+                { name:'name',     label:'Product Name', type:'text',   required:true },
+                { name:'sku',      label:'SKU',          type:'text' },
+                { name:'category', label:'Category',     type:'select', options: categoryOptions() },
+                { name:'price',    label:'Price (Rs)',   type:'number', required:true, step:'0.01', min:0 },
+                { name:'stock',    label:'Stock',        type:'number', required:true, min:0 },
+                { name:'low_stock_threshold', label:'Low-stock threshold', type:'number', min:0 },
+                { name:'supplier_id', label:'Supplier', type:'select', options: SUPPLIER_OPTIONS }
+            ],
+            initial: { ...p, supplier_id: supplierOptionFor(p.supplier_id) }
+        });
+        if (!v) return;
+        v.supplier_id = supplierIdFromOption(v.supplier_id);
+        try {
+            await api('/api/products/' + p.id, { method:'PUT', body: v });
+            kasbpro_toast('Saved', 'ok');
+            loadProducts();
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    async function deleteProduct(p) {
+        const ok = await kasbpro_confirm(`Delete "${p.name}"? This cannot be undone.`);
+        if (!ok) return;
+        try {
+            await api('/api/products/' + p.id, { method:'DELETE' });
+            kasbpro_toast('Deleted', 'ok');
+            loadProducts();
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+
+    /* Boot */
+    (async () => {
+        const ok = await kasbpro_hydrateSession();
+        if (!ok) return kasbpro_requireAuth();
+        kasbpro_applyRoleUI();
+
+        document.getElementById('productSearch').addEventListener('input', applySearch);
+        document.getElementById('btnAddProduct').addEventListener('click', addProduct);
+        document.getElementById('categoryForm').addEventListener('submit', addCategory);
+        document.getElementById('categoryList').addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-category-id]');
+            if (button) deleteCategory(button.dataset.categoryId, button.dataset.categoryName);
+        });
+
+        /* Row action delegation */
+        document.getElementById('invBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-act]');
+            if (!btn) return;
+            const id = +btn.closest('tr').dataset.id;
+            const p = ALL_PRODUCTS.find(x => x.id === id);
+            if (!p) return;
+            if (btn.dataset.act === 'edit')   editProduct(p);
+            if (btn.dataset.act === 'delete') deleteProduct(p);
+        });
+
+        /* Sidebar toggle */
+        const t = document.getElementById('mobileToggle');
+        const s = document.getElementById('sidebar');
+        if (t && s) t.addEventListener('click', () => s.classList.toggle('active'));
+
+        try {
+            await loadCategories();
+            await loadSuppliers();
+        } catch (e) {
+            kasbpro_toast('Could not load suppliers: ' + e.message, 'warn');
+        }
+        loadProducts();
+
+        /* Open the add form when launched with ?new=1 */
+        if (new URLSearchParams(location.search).get('new') === '1' && kasbpro_can('canCreate')) {
+            setTimeout(addProduct, 200);
+        }
+    })();
+    </script>
+</body>
+</html>

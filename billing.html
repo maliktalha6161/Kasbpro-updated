@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · Billing</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="common.js"></script>
+    <style>
+        /* POS-modal-specific styles (kept local — does NOT change global UI) */
+        .pos-overlay {
+            position: fixed; inset: 0; background: rgba(15,23,42,.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000; padding: 20px;
+        }
+        .pos-shell {
+            background: white; border-radius: 18px; width: 100%;
+            max-width: 880px; max-height: 92vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,.25);
+        }
+        .pos-head {
+            padding: 18px 24px; border-bottom: 1px solid #eef2ff;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .pos-head h3 { color: #1e3a8a; font-weight: 800; font-size: 1.15rem; }
+        .pos-body { padding: 20px 24px; overflow-y: auto; }
+
+        .pos-grid {
+            display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px;
+        }
+        .pos-products { max-height: 360px; overflow-y: auto;
+                        border: 1px solid #eef2ff; border-radius: 12px; }
+        .pos-prod-item {
+            display: grid; grid-template-columns: 1fr auto auto;
+            gap: 10px; align-items: center;
+            padding: 10px 14px; border-bottom: 1px solid #f4f7fe;
+            font-size: .9rem;
+        }
+        .pos-prod-item:last-child { border-bottom: none; }
+        .pos-prod-item:hover { background: #f8fafc; }
+        .pos-prod-item small { color: #94a3b8; font-size: .75rem; display: block; }
+        .pos-prod-item button {
+            background: #2563eb; color: white; border: none;
+            padding: 6px 12px; border-radius: 8px; cursor: pointer;
+            font-size: .78rem; font-weight: 700;
+        }
+        .pos-prod-item button:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        .cart-empty {
+            padding: 30px; text-align: center; color: #94a3b8; font-size: .9rem;
+            border: 2px dashed #e2e8f0; border-radius: 12px;
+        }
+        .cart-line {
+            display: grid; grid-template-columns: 1fr auto auto auto;
+            gap: 10px; align-items: center;
+            padding: 10px 12px; border-bottom: 1px solid #f4f7fe; font-size: .88rem;
+        }
+        .cart-line input {
+            width: 60px; padding: 6px 8px; border: 1px solid #e2e8f0;
+            border-radius: 8px; outline: none; font-size: .85rem; text-align: center;
+        }
+        .cart-line .rm { background: none; border: none; color: #dc2626;
+                        cursor: pointer; font-size: 1rem; }
+
+        .pos-foot {
+            border-top: 1px solid #eef2ff;
+            padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+            background: #f8fafc;
+        }
+        .pos-total { font-size: 1.3rem; font-weight: 800; color: #1e3a8a; }
+        .pos-cust select { padding: 9px 12px; border: 1px solid #e2e8f0;
+                           border-radius: 10px; outline: none; font-size: .9rem;
+                           min-width: 220px; }
+
+        @media (max-width: 720px) {
+            .pos-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html" class="logo-container">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <ul class="nav-menu-upper">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="inventory.html" class="nav-link"><i class="fas fa-boxes-stacked nav-icon"></i><span class="link-text">Inventory</span></a></li>
+                <li class="nav-item"><a href="customers.html" class="nav-link"><i class="fas fa-users nav-icon"></i><span class="link-text">Customers</span></a></li>
+                <li class="nav-item"><a href="suppliers.html" class="nav-link"><i class="fas fa-truck nav-icon"></i><span class="link-text">Suppliers</span></a></li>
+                <li class="nav-item active"><a href="billing.html" class="nav-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="link-text">Billing</span></a></li>
+                <li class="nav-item"><a href="reports.html" class="nav-link"><i class="fas fa-file-chart-column nav-icon"></i><span class="link-text">Reports</span></a></li>
+                <li class="nav-item"><a href="ai-assistant.html" class="nav-link"><i class="fas fa-robot nav-icon"></i><span class="link-text">AI Assistant</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-info">
+                    <div class="user-avatar-circle js-user-initial">U</div>
+                    <div>
+                        <p class="user-name js-user-name">User</p>
+                        <p class="user-role js-user-role">Role</p>
+                    </div>
+                </div>
+                <button class="logout-button" onclick="logout()">
+                    <i class="fas fa-right-from-bracket logout-icon"></i>
+                    <span class="link-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Billing &amp; Invoices</h1>
+                    <p class="page-sub">Digital POS — generate invoices and review history (FR-03 + FR-04).</p>
+                </div>
+                <div class="header-actions">
+                    <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="stats-row">
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Today's Revenue</p><h2 class="stat-value" id="statRev">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Invoices Today</p><h2 class="stat-value" id="statInv">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">Avg. Bill Value</p><h2 class="stat-value" id="statAvg">—</h2></div></div>
+                <div class="card stat-card"><div class="stat-info"><p class="stat-label">7-Day Revenue</p><h2 class="stat-value" id="statWeek">—</h2></div></div>
+            </section>
+
+            <div class="page-action-bar">
+                <input type="text" class="search-pill" placeholder="Search invoice # or customer..." id="invoiceSearch">
+                <button class="btn-primary" data-perm="canCreate" id="btnNewInvoice">
+                    <i class="fas fa-file-invoice"></i> New Invoice
+                </button>
+            </div>
+
+            <div class="card" style="margin-bottom: 0;">
+                <div class="data-table-wrap">
+                    <table class="data-table" id="invoicesTable">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invBody">
+                            <tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8;">Loading invoices…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+    /* Billing page logic */
+    function statusPill(s) {
+        const c = { Paid:'green', Pending:'yellow', Cancelled:'red' }[s] || 'blue';
+        return `<span class="pill ${c}">${s}</span>`;
+    }
+    function fmtDateTime(d) {
+        if (!d) return '—';
+        return new Date(d.replace(' ', 'T')).toLocaleString('en-US',
+            { month: 'short', day: 'numeric', year: 'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+
+    let ALL_INVOICES = [];
+    let PRODUCT_CACHE = [];
+    let CUSTOMER_CACHE = [];
+
+    function renderInvoices(list) {
+        const body = document.getElementById('invBody');
+        if (!list.length) {
+            body.innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#94a3b8;">No invoices match.</td></tr>';
+            return;
+        }
+        body.innerHTML = list.map(i => `
+            <tr data-id="${i.id}">
+                <td><strong>${escapeHtml(i.invoice_number)}</strong></td>
+                <td>${fmtDateTime(i.created_at)}</td>
+                <td>${escapeHtml(i.customer_name || 'Walk-in')}</td>
+                <td>${i.item_count || 0} items</td>
+                <td class="amount-highlight">Rs ${(+i.total).toFixed(2)}</td>
+                <td>${statusPill(i.status)}</td>
+                <td>
+                    <div class="row-actions">
+                        <button class="btn-icon-sm" data-act="view" title="View"><i class="fas fa-eye"></i></button>
+                        <button class="btn-icon-sm" data-act="print" title="Print receipt"><i class="fas fa-print"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        kasbpro_applyRoleUI();
+    }
+
+    function renderStats(list, daily) {
+        const todayKey = new Date().toISOString().slice(0,10);
+        const todayInvs = list.filter(i => i.created_at && i.created_at.startsWith(todayKey));
+        const rev = todayInvs.reduce((s,i) => s + (+i.total || 0), 0);
+        document.getElementById('statRev').textContent = 'Rs ' + rev.toFixed(0);
+        document.getElementById('statInv').textContent = todayInvs.length;
+        document.getElementById('statAvg').textContent =
+            todayInvs.length ? 'Rs ' + (rev/todayInvs.length).toFixed(2) : 'Rs 0';
+
+        const week = list.filter(i => {
+            const d = new Date(i.created_at.replace(' ','T'));
+            return (Date.now() - d.getTime()) <= 7*24*3600*1000;
+        }).reduce((s,i) => s + (+i.total || 0), 0);
+        document.getElementById('statWeek').textContent = 'Rs ' + week.toFixed(0);
+    }
+
+    async function load() {
+        try {
+            const data = await api('/api/invoices');
+            ALL_INVOICES = data.invoices;
+            renderStats(ALL_INVOICES);
+            applySearch();
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    function applySearch() {
+        const q = document.getElementById('invoiceSearch').value.toLowerCase().trim();
+        renderInvoices(ALL_INVOICES.filter(i =>
+            !q ||
+            i.invoice_number.toLowerCase().includes(q) ||
+            (i.customer_name || 'walk-in').toLowerCase().includes(q)
+        ));
+    }
+
+    /* Invoice view modal */
+    async function viewInvoice(id) {
+        try {
+            const d = await api('/api/invoices/' + id);
+            const inv = d.invoice, items = d.items;
+            const overlay = document.createElement('div');
+            overlay.className = 'pos-overlay';
+            overlay.innerHTML = `
+                <div class="pos-shell" style="max-width:560px;">
+                    <div class="pos-head">
+                        <h3>${escapeHtml(inv.invoice_number)}</h3>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button data-kp="print" style="background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem;"><i class="fas fa-print"></i> Print</button>
+                            <button data-kp="close" style="background:none;border:none;font-size:1.5rem;color:#94a3b8;cursor:pointer;line-height:1;">×</button>
+                        </div>
+                    </div>
+                    <div class="pos-body">
+                        <div style="font-size:.85rem;color:#64748b;margin-bottom:18px;line-height:1.6;">
+                            <strong>Customer:</strong> ${escapeHtml(inv.customer_name || 'Walk-in')}<br>
+                            <strong>Date:</strong> ${fmtDateTime(inv.created_at)}<br>
+                            <strong>Status:</strong> ${inv.status}
+                        </div>
+                        <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+                            <thead><tr style="border-bottom:1px solid #eef2ff;">
+                                <th style="text-align:left;padding:8px 4px;color:#64748b;font-size:.75rem;">Item</th>
+                                <th style="text-align:right;padding:8px 4px;color:#64748b;font-size:.75rem;">Qty</th>
+                                <th style="text-align:right;padding:8px 4px;color:#64748b;font-size:.75rem;">Price</th>
+                                <th style="text-align:right;padding:8px 4px;color:#64748b;font-size:.75rem;">Total</th>
+                            </tr></thead>
+                            <tbody>
+                            ${items.map(it => `<tr style="border-bottom:1px solid #f4f7fe;">
+                                <td style="padding:8px 4px;">${escapeHtml(it.product_name)}</td>
+                                <td style="padding:8px 4px;text-align:right;">${it.quantity}</td>
+                                <td style="padding:8px 4px;text-align:right;">Rs ${(+it.unit_price).toFixed(2)}</td>
+                                <td style="padding:8px 4px;text-align:right;"><strong>Rs ${(+it.line_total).toFixed(2)}</strong></td>
+                            </tr>`).join('')}
+                            </tbody>
+                        </table>
+                        <div style="text-align:right;margin-top:18px;font-size:1.1rem;color:#1e3a8a;font-weight:800;">
+                            Total: Rs ${(+inv.total).toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => {
+                if (e.target.closest('[data-kp="print"]')) { kasbpro_printReceipt(inv.id); return; }
+                if (e.target === overlay || e.target.closest('[data-kp="close"]')) overlay.remove();
+            });
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    /* New invoice modal */
+    let CART = [];   // [{product_id, name, price, qty, stock}]
+
+    async function openPOS() {
+        try {
+            const [prods, custs] = await Promise.all([
+                api('/api/products'),
+                api('/api/customers')
+            ]);
+            PRODUCT_CACHE  = prods.products.filter(p => p.stock > 0);
+            CUSTOMER_CACHE = custs.customers;
+        } catch (e) { return kasbpro_toast(e.message, 'err'); }
+
+        CART = [];
+
+        const overlay = document.createElement('div');
+        overlay.className = 'pos-overlay';
+        overlay.innerHTML = `
+            <div class="pos-shell">
+                <div class="pos-head">
+                    <h3><i class="fas fa-cash-register"></i> &nbsp; New Invoice</h3>
+                    <button data-kp="close" style="background:none;border:none;font-size:1.5rem;color:#94a3b8;cursor:pointer;">×</button>
+                </div>
+                <div class="pos-body">
+                    <div class="pos-grid">
+                        <div>
+                            <input type="text" id="posSearch" placeholder="Search products…"
+                                style="width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.92rem;outline:none;margin-bottom:10px;">
+                            <div class="pos-products" id="posProducts"></div>
+                        </div>
+                        <div>
+                            <h4 style="color:#1e3a8a;font-weight:700;margin-bottom:12px;font-size:.95rem;">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                            </h4>
+                            <div id="posCart"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pos-foot">
+                    <div class="pos-cust">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                            <label style="font-size:.78rem;color:#64748b;font-weight:600;display:block;margin-bottom:4px;">Customer</label>
+                            <button type="button" id="posNewCustomer" data-role="admin,owner,staff"
+                                style="background:none;border:none;color:#2563eb;font-weight:700;cursor:pointer;font-size:.78rem;">
+                                <i class="fas fa-plus"></i> New Customer
+                            </button>
+                        </div>
+                        <select id="posCustomer">
+                            <option value="">— Walk-in customer —</option>
+                            ${CUSTOMER_CACHE.map(c => `<option value="${c.id}">${escapeHtml(c.name)} ${c.phone ? '· '+escapeHtml(c.phone) : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="pos-total" id="posTotal">Rs 0.00</div>
+                        <button id="posSubmit"
+                            style="margin-top:8px;background:#2563eb;color:white;border:none;padding:11px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.95rem;">
+                            <i class="fas fa-check"></i> Generate Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        document.getElementById('posNewCustomer').addEventListener('click', async () => {
+            const values = await kasbpro_modal({
+                title: 'Add Customer', submit: 'Create',
+                fields: [
+                    { name:'name', label:'Full Name', type:'text', required:true },
+                    { name:'phone', label:'Phone', type:'text' },
+                    { name:'email', label:'Email', type:'email' }
+                ]
+            });
+            if (!values) return;
+            try {
+                const result = await api('/api/customers', { method:'POST', body: values });
+                const customer = { id: result.id, name: values.name, phone: values.phone };
+                CUSTOMER_CACHE.push(customer);
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = customer.name + (customer.phone ? ' · ' + customer.phone : '');
+                const select = document.getElementById('posCustomer');
+                select.appendChild(option);
+                select.value = String(customer.id);
+                kasbpro_toast('Customer added', 'ok');
+            } catch (e) { kasbpro_toast(e.message, 'err'); }
+        });
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay || e.target.dataset.kp === 'close') close();
+        });
+
+        function renderProducts() {
+            const q = document.getElementById('posSearch').value.toLowerCase().trim();
+            const list = PRODUCT_CACHE
+                .filter(p => !q || p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q))
+                .slice(0, 200);
+            const el = document.getElementById('posProducts');
+            if (!list.length) {
+                el.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;">No products in stock</div>';
+                return;
+            }
+            el.innerHTML = list.map(p => {
+                const inCart = CART.find(c => c.product_id === p.id);
+                const remaining = p.stock - (inCart ? inCart.qty : 0);
+                return `<div class="pos-prod-item" data-id="${p.id}">
+                    <div>
+                        <strong>${escapeHtml(p.name)}</strong>
+                        <small>${escapeHtml(p.category)} · stock: ${remaining}</small>
+                    </div>
+                    <div>Rs ${(+p.price).toFixed(2)}</div>
+                    <button data-act="add" ${remaining <= 0 ? 'disabled' : ''}>
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
+        function renderCart() {
+            const el = document.getElementById('posCart');
+            if (!CART.length) {
+                el.innerHTML = '<div class="cart-empty"><i class="fas fa-cart-arrow-down" style="font-size:1.6rem;margin-bottom:8px;display:block;"></i>Add products to start</div>';
+                document.getElementById('posTotal').textContent = 'Rs 0.00';
+                return;
+            }
+            el.innerHTML = CART.map(c => `
+                <div class="cart-line" data-id="${c.product_id}">
+                    <div>
+                        <strong style="font-size:.85rem;">${escapeHtml(c.name)}</strong>
+                        <div style="color:#94a3b8;font-size:.75rem;">Rs ${(+c.price).toFixed(2)} each</div>
+                    </div>
+                    <input type="number" min="1" max="${c.stock}" value="${c.qty}" data-act="qty">
+                    <div style="font-weight:700;color:#1e3a8a;">Rs ${(c.price * c.qty).toFixed(2)}</div>
+                    <button class="rm" data-act="remove" title="Remove"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
+            const total = CART.reduce((s,c) => s + c.price * c.qty, 0);
+            document.getElementById('posTotal').textContent = 'Rs ' + total.toFixed(2);
+        }
+
+        document.getElementById('posSearch').addEventListener('input', renderProducts);
+
+        document.getElementById('posProducts').addEventListener('click', e => {
+            const btn = e.target.closest('button[data-act="add"]');
+            if (!btn) return;
+            const id = +btn.closest('.pos-prod-item').dataset.id;
+            const p = PRODUCT_CACHE.find(x => x.id === id);
+            const inCart = CART.find(x => x.product_id === id);
+            if (inCart) {
+                if (inCart.qty < p.stock) inCart.qty++;
+            } else {
+                CART.push({ product_id: p.id, name: p.name, price: p.price, qty: 1, stock: p.stock });
+            }
+            renderCart(); renderProducts();
+        });
+
+        document.getElementById('posCart').addEventListener('input', e => {
+            const inp = e.target.closest('input[data-act="qty"]');
+            if (!inp) return;
+            const id = +inp.closest('.cart-line').dataset.id;
+            const c = CART.find(x => x.product_id === id);
+            let q = parseInt(inp.value || '1', 10);
+            if (isNaN(q) || q < 1) q = 1;
+            if (q > c.stock) { q = c.stock; inp.value = q; kasbpro_toast(`Only ${c.stock} in stock`, 'warn'); }
+            c.qty = q;
+            renderCart(); renderProducts();
+        });
+        document.getElementById('posCart').addEventListener('click', e => {
+            const btn = e.target.closest('button[data-act="remove"]');
+            if (!btn) return;
+            const id = +btn.closest('.cart-line').dataset.id;
+            CART = CART.filter(c => c.product_id !== id);
+            renderCart(); renderProducts();
+        });
+
+        document.getElementById('posSubmit').addEventListener('click', async () => {
+            if (!CART.length) return kasbpro_toast('Cart is empty', 'warn');
+            const customer_id = document.getElementById('posCustomer').value || null;
+            const payload = {
+                customer_id: customer_id ? +customer_id : null,
+                items: CART.map(c => ({ product_id: c.product_id, quantity: c.qty }))
+            };
+            try {
+                const r = await api('/api/invoices', { method:'POST', body: payload });
+                kasbpro_toast(`Invoice ${r.invoice_number} created — Rs ${(+r.total).toFixed(2)}`, 'ok');
+                close();
+                load();
+                kasbpro_printReceipt(r.id);   // auto-open receipt for the new sale
+            } catch (e) { kasbpro_toast(e.message, 'err'); }
+        });
+
+        renderProducts();
+        renderCart();
+    }
+
+    /* Boot */
+    (async () => {
+        const ok = await kasbpro_hydrateSession();
+        if (!ok) return kasbpro_requireAuth();
+        kasbpro_applyRoleUI();
+
+        document.getElementById('invoiceSearch').addEventListener('input', applySearch);
+        document.getElementById('btnNewInvoice').addEventListener('click', openPOS);
+
+        document.getElementById('invBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-act]');
+            if (!btn) return;
+            const id = +btn.closest('tr').dataset.id;
+            if (btn.dataset.act === 'view')  viewInvoice(id);
+            if (btn.dataset.act === 'print') kasbpro_printReceipt(id);
+        });
+
+        const t = document.getElementById('mobileToggle');
+        const s = document.getElementById('sidebar');
+        if (t && s) t.addEventListener('click', () => s.classList.toggle('active'));
+
+        load();
+
+        if (new URLSearchParams(location.search).get('new') === '1' && kasbpro_can('canCreate')) {
+            setTimeout(openPOS, 200);
+        }
+    })();
+    </script>
+</body>
+</html>

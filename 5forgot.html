@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password · KasbPro</title>
+    <link rel="stylesheet" href="5forgot.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <a href="3main.html" class="auth-logo">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <div id="request-view">
+                <h2>Forgot Password?</h2>
+                <p class="auth-subtitle">Enter your email and we'll send you a link to reset your password.</p>
+
+                <form id="forgot-password-form">
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="name@company.com" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Send Reset Link</button>
+                </form>
+            </div>
+
+            <div id="success-view" class="hidden">
+                <div class="success-icon">
+                    <img src="https://img.icons8.com/fluency/96/mail-circle.png" alt="Email Sent">
+                </div>
+                <h2>Check your email</h2>
+                <p class="auth-subtitle">We've sent a password reset link to <br><strong id="user-email">user@example.com</strong></p>
+                <button onclick="toggleView()" class="auth-btn secondary">Resend Email</button>
+            </div>
+
+            <div class="auth-footer">
+                <a href="2login.html" class="back-link">← Back to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="5forgot.js"></script>
+</body>
+</html>

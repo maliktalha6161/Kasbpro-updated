@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · Create Account</title>
+    <link rel="stylesheet" href="1sign.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+
+        <!-- Brand panel -->
+        <div class="brand-side">
+            <div class="brand-content">
+                <a href="3main.html" class="logo">
+                    <i class="fas fa-chart-line"></i> KasbPro
+                </a>
+                <h1>Smart Business Management for Retail Stores</h1>
+                <p>Manage sales, inventory, customers and AI insights — all in one secure platform.</p>
+
+                <ul class="brand-points">
+                    <li><i class="fas fa-shield-halved"></i> Role-based secure access</li>
+                    <li><i class="fas fa-bolt"></i> Real-time inventory updates</li>
+                    <li><i class="fas fa-chart-line"></i> AI-powered business insights</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Form panel -->
+        <div class="form-side">
+            <div class="form-card">
+                <h2>Create your account</h2>
+                <p class="form-sub">It only takes a minute. Pick the role that fits how you'll use KasbPro.</p>
+
+                <form id="signupForm" novalidate>
+
+                    <!-- Role picker -->
+                    <div class="input-group">
+                        <label class="role-label">I want to register as</label>
+                        <div class="role-picker">
+                            <label class="role-option" data-role="admin">
+                                <input type="radio" name="role" value="admin" required>
+                                <div class="role-body">
+                                    <div class="role-icon admin"><i class="fas fa-user-tie"></i></div>
+                                    <div>
+                                        <div class="role-title">Admin</div>
+                                        <div class="role-desc">Manage records — add and edit inventory, customers &amp; suppliers; view analytics.</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="role-option" data-role="owner">
+                                <input type="radio" name="role" value="owner" required>
+                                <div class="role-body">
+                                    <div class="role-icon owner"><i class="fas fa-user-eye"></i></div>
+                                    <div>
+                                        <div class="role-title">Owner</div>
+                                        <div class="role-desc">Full access — manage records, users, system settings, backups and analytics.</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="role-option" data-role="staff">
+                                <input type="radio" name="role" value="staff" required>
+                                <div class="role-body">
+                                    <div class="role-icon staff"><i class="fas fa-user-check"></i></div>
+                                    <div>
+                                        <div class="role-title">Staff</div>
+                                        <div class="role-desc">Billing access — create invoices and process customer sales.</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="fullname">Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="far fa-user"></i>
+                            <input type="text" id="fullname" placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="far fa-envelope"></i>
+                            <input type="email" id="email" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="password" placeholder="Create a password" required minlength="6">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="confirmPassword">Confirm</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="confirmPassword" placeholder="Confirm password" required minlength="6">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">I agree to the <a href="#">Terms of Service</a> &amp; <a href="#">Privacy Policy</a>.</label>
+                    </div>
+
+                    <button type="submit" class="signup-btn">Create Account</button>
+                </form>
+
+                <p class="login-link">
+                    Already have an account? <a href="2login.html">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="1sign.js"></script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+/* Sign-up page styles */
+
+* { margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+body { background: #f8fafc; min-height: 100vh; color: #1e293b; }
+
+.main-container {
+    display: flex; min-height: 100vh; flex-direction: column;
+}
+
+/* Brand panel */
+.brand-side {
+    flex: 1;
+    background: linear-gradient(135deg, #4b91f7 0%, #2563eb 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+}
+.brand-content { max-width: 460px; }
+.logo {
+    display: inline-flex; align-items: center; gap: 12px;
+    margin-bottom: 30px; font-size: 1.6rem; font-weight: 800;
+    color: white; text-decoration: none;
+}
+.brand-content h1 { font-size: 2rem; line-height: 1.2; margin-bottom: 16px; font-weight: 800; }
+.brand-content > p { font-size: 1.05rem; opacity: 0.92; line-height: 1.6; margin-bottom: 30px; }
+.brand-points { list-style: none; }
+.brand-points li {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 0; font-size: 0.95rem; opacity: 0.95;
+}
+.brand-points i { background: rgba(255,255,255,0.18); padding: 8px; border-radius: 8px; }
+
+/* Form panel */
+.form-side {
+    flex: 1.2;
+    display: flex; align-items: center; justify-content: center;
+    padding: 30px 20px;
+}
+.form-card {
+    background: white; width: 100%; max-width: 520px;
+    padding: 36px 36px 30px; border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+.form-card h2 {
+    color: #1e293b; text-align: center;
+    margin-bottom: 6px; font-size: 1.55rem; font-weight: 800;
+}
+.form-sub {
+    text-align: center; color: #64748b; font-size: 0.92rem;
+    margin-bottom: 24px;
+}
+
+.input-group { margin-bottom: 16px; }
+.input-group label {
+    display: block; font-size: 0.88rem; font-weight: 600;
+    color: #475569; margin-bottom: 8px;
+}
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-wrapper i {
+    position: absolute; left: 14px; color: #94a3b8;
+}
+.input-wrapper input {
+    width: 100%; padding: 12px 12px 12px 42px;
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    outline: none; font-size: 0.95rem; transition: all 0.2s;
+}
+.input-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Role picker */
+.role-label { font-weight: 700 !important; color: #1e293b !important; }
+
+.role-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.role-option {
+    border: 2px solid #e2e8f0; border-radius: 12px;
+    padding: 14px; cursor: pointer; transition: all 0.2s;
+    background: #f8fafc; position: relative;
+}
+.role-option:hover { border-color: #93c5fd; background: white; }
+.role-option input[type="radio"] {
+    position: absolute; opacity: 0; pointer-events: none;
+}
+.role-body { display: flex; gap: 12px; align-items: flex-start; }
+.role-icon {
+    flex-shrink: 0; width: 38px; height: 38px;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+.role-icon.admin { background: #eff6ff; color: #2563eb; }
+.role-icon.owner { background: #fff7ed; color: #d97706; }
+.role-icon.staff { background: #ecfdf5; color: #059669; }
+.role-title { font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 2px; }
+.role-desc  { font-size: 0.78rem; color: #64748b; line-height: 1.4; }
+
+.role-option:has(input:checked) {
+    border-color: #2563eb; background: white;
+    box-shadow: 0 4px 14px -4px rgba(37, 99, 235, 0.25);
+}
+
+/* Other styles */
+.checkbox-group {
+    display: flex; align-items: center; gap: 8px;
+    margin: 14px 0 18px; font-size: 0.85rem; color: #64748b;
+}
+.checkbox-group a { color: #2563eb; text-decoration: none; font-weight: 600; }
+
+.signup-btn {
+    width: 100%; padding: 14px;
+    background: #2563eb; color: white;
+    border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+}
+.signup-btn:hover { background: #1d4ed8; }
+.signup-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.login-link {
+    text-align: center; margin-top: 22px;
+    font-size: 0.92rem; color: #64748b;
+}
+.login-link a { color: #2563eb; text-decoration: none; font-weight: 700; }
+
+/* Responsive styles */
+@media (min-width: 992px) {
+    .main-container { flex-direction: row; }
+    .brand-side { padding: 80px; }
+}
+@media (max-width: 540px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .role-picker { grid-template-columns: 1fr; }
+    .form-card { padding: 26px 22px; }
+}

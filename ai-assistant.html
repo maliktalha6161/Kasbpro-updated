@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · AI Business Assistant</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="common.js"></script>
+    <style>
+        .chat-shell {
+            background: white;
+            border-radius: 18px; border: 1px solid #eef2ff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column;
+            height: calc(100vh - 180px);
+            overflow: hidden;
+        }
+        .chat-shell-header { padding: 20px 26px; border-bottom: 1px solid #f4f7fe; }
+        .chat-shell-header h2 { font-size: 1.1rem; color: #1e3a8a; font-weight: 800; }
+        .chat-shell-header p  { font-size: 0.85rem; color: #64748b; }
+
+        .chat-body { flex: 1; overflow-y: auto; padding: 24px; }
+        .welcome   { text-align: center; max-width: 560px; margin: 30px auto; }
+        .welcome i {
+            font-size: 2.6rem; color: #2563eb;
+            background: #eef4ff; padding: 18px;
+            border-radius: 16px; margin-bottom: 16px;
+        }
+        .welcome h3 { font-size: 1.3rem; color: #1e3a8a; font-weight: 800; margin-bottom: 8px; }
+        .welcome p  { color: #64748b; margin-bottom: 22px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .chip {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            padding: 10px 16px; border-radius: 10px;
+            font-size: 0.85rem; font-weight: 600; color: #2563eb;
+            cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .chip:hover { border-color: #2563eb; background: white; }
+
+        .msg { margin-bottom: 14px; max-width: 75%; line-height: 1.5; font-size: 0.92rem; }
+        .msg.user {
+            margin-left: auto; background: #2563eb; color: white;
+            padding: 12px 16px; border-radius: 14px 14px 0 14px;
+        }
+        .msg.bot {
+            margin-right: auto; background: #f8fafc; color: #1e293b;
+            border-left: 3px solid #2563eb;
+            padding: 12px 16px; border-radius: 14px 14px 14px 0;
+        }
+        .msg.thinking { color: #94a3b8; font-style: italic; }
+
+        .chat-footer {
+            padding: 14px 22px; border-top: 1px solid #f4f7fe;
+            display: flex; gap: 10px;
+        }
+        .chat-footer input {
+            flex: 1; padding: 12px 16px; border-radius: 10px;
+            border: 1px solid #e2e8f0; outline: none; font-size: 0.92rem;
+        }
+        .chat-footer input:focus { border-color: #2563eb; }
+        .chat-footer button {
+            background: #2563eb; color: white; border: none;
+            padding: 0 20px; border-radius: 10px; cursor: pointer; font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html" class="logo-container">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <ul class="nav-menu-upper">
+                <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="inventory.html" class="nav-link"><i class="fas fa-boxes-stacked nav-icon"></i><span class="link-text">Inventory</span></a></li>
+                <li class="nav-item"><a href="customers.html" class="nav-link"><i class="fas fa-users nav-icon"></i><span class="link-text">Customers</span></a></li>
+                <li class="nav-item"><a href="suppliers.html" class="nav-link"><i class="fas fa-truck nav-icon"></i><span class="link-text">Suppliers</span></a></li>
+                <li class="nav-item"><a href="billing.html" class="nav-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="link-text">Billing</span></a></li>
+                <li class="nav-item"><a href="reports.html" class="nav-link"><i class="fas fa-file-chart-column nav-icon"></i><span class="link-text">Reports</span></a></li>
+                <li class="nav-item active"><a href="ai-assistant.html" class="nav-link"><i class="fas fa-robot nav-icon"></i><span class="link-text">AI Assistant</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-info">
+                    <div class="user-avatar-circle js-user-initial">U</div>
+                    <div>
+                        <p class="user-name js-user-name">User</p>
+                        <p class="user-role js-user-role">Role</p>
+                    </div>
+                </div>
+                <button class="logout-button" onclick="logout()">
+                    <i class="fas fa-right-from-bracket logout-icon"></i>
+                    <span class="link-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">AI Business Assistant</h1>
+                    <p class="page-sub">Ask anything about your sales, inventory and customer data (FR-05).</p>
+                </div>
+                <div class="header-actions">
+                    <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
+
+            <div class="chat-shell">
+                <div class="chat-shell-header">
+                    <h2><i class="fas fa-robot"></i> Insights Assistant</h2>
+                    <p>Powered by your real-time KasbPro data</p>
+                </div>
+
+                <div class="chat-body" id="chatBody">
+                    <div class="welcome" id="welcomeScreen">
+                        <i class="fas fa-brain"></i>
+                        <h3>How can I help you today?</h3>
+                        <p>I can analyze your sales, inventory and customer data to surface actionable insights.</p>
+                        <div class="chips">
+                            <button class="chip" data-q="What were today's sales?"><i class="fas fa-chart-line"></i> Today's sales?</button>
+                            <button class="chip" data-q="Which products are low on stock?"><i class="fas fa-boxes"></i> Low on stock?</button>
+                            <button class="chip" data-q="Top selling products this week"><i class="fas fa-trophy"></i> Top sellers?</button>
+                            <button class="chip" data-q="Give me a business summary"><i class="fas fa-clipboard-list"></i> Business summary</button>
+                            <button class="chip" data-q="How many customers visited today?"><i class="fas fa-users"></i> Customer visits?</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-footer">
+                    <input type="text" id="chatInput" placeholder="Ask about your business...">
+                    <button id="sendBtn"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+    function appendMsg(who, text) {
+        const body = document.getElementById('chatBody');
+        const welcome = document.getElementById('welcomeScreen');
+        if (welcome) welcome.style.display = 'none';
+        const div = document.createElement('div');
+        div.className = 'msg ' + who;
+        div.textContent = text;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+        return div;
+    }
+
+    async function ask(question) {
+        if (!question || !question.trim()) return;
+        appendMsg('user', question);
+        const thinking = appendMsg('bot thinking', 'Thinking…');
+        try {
+            const data = await api('/api/ai/chat', { method: 'POST', body: { message: question } });
+            thinking.classList.remove('thinking');
+            thinking.textContent = data.response;
+        } catch (e) {
+            thinking.classList.remove('thinking');
+            thinking.textContent = 'Sorry — ' + e.message;
+        }
+        document.getElementById('chatBody').scrollTop = document.getElementById('chatBody').scrollHeight;
+    }
+
+    /* Boot */
+    (async () => {
+        const ok = await kasbpro_hydrateSession();
+        if (!ok) return kasbpro_requireAuth();
+        kasbpro_applyRoleUI();
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => ask(chip.dataset.q));
+        });
+
+        const input = document.getElementById('chatInput');
+        const send  = document.getElementById('sendBtn');
+        const submit = () => {
+            const v = input.value.trim();
+            if (!v) return;
+            input.value = '';
+            ask(v);
+        };
+        send.addEventListener('click', submit);
+        input.addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
+
+        const t = document.getElementById('mobileToggle');
+        const s = document.getElementById('sidebar');
+        if (t && s) t.addEventListener('click', () => s.classList.toggle('active'));
+    })();
+    </script>
+</body>
+</html>

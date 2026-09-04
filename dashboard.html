@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KasbPro · Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="common.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html" class="logo-container">
+                <span class="logo-icon">K</span>
+                <span class="logo-text">KasbPro</span>
+            </a>
+
+            <ul class="nav-menu-upper">
+                <li class="nav-item active"><a href="dashboard.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="inventory.html" class="nav-link"><i class="fas fa-boxes-stacked nav-icon"></i><span class="link-text">Inventory</span></a></li>
+                <li class="nav-item"><a href="customers.html" class="nav-link"><i class="fas fa-users nav-icon"></i><span class="link-text">Customers</span></a></li>
+                <li class="nav-item"><a href="suppliers.html" class="nav-link"><i class="fas fa-truck nav-icon"></i><span class="link-text">Suppliers</span></a></li>
+                <li class="nav-item"><a href="billing.html" class="nav-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="link-text">Billing</span></a></li>
+                <li class="nav-item"><a href="reports.html" class="nav-link"><i class="fas fa-file-chart-column nav-icon"></i><span class="link-text">Reports</span></a></li>
+                <li class="nav-item"><a href="ai-assistant.html" class="nav-link"><i class="fas fa-robot nav-icon"></i><span class="link-text">AI Assistant</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <ul class="nav-menu-lower">
+                    <li class="nav-item" data-role="owner">
+                        <a href="#" class="nav-link" id="navBackup">
+                            <i class="fas fa-database nav-icon"></i>
+                            <span class="link-text">Run Backup</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-role="owner">
+                        <a href="system.html" class="nav-link">
+                            <i class="fas fa-shield-halved nav-icon"></i>
+                            <span class="link-text">System</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="user-profile-info">
+                    <div class="user-avatar-circle js-user-initial">U</div>
+                    <div>
+                        <p class="user-name js-user-name">User</p>
+                        <p class="user-role js-user-role">Role</p>
+                    </div>
+                </div>
+
+                <button type="button" class="logout-button" onclick="logout()">
+                    <i class="fas fa-right-from-bracket logout-icon"></i>
+                    <span class="link-text">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-sub">Welcome back, <span class="js-user-name">User</span> — here's how your store looks today.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" title="Notifications"><i class="fas fa-bell"></i></button>
+                    <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+                </div>
+            </header>
+
+            <!-- Stats — populated from /api/dashboard/stats -->
+            <section class="stats-row">
+                <div class="card stat-card">
+                    <div class="stat-info">
+                        <p class="stat-label">Today's Sales</p>
+                        <h2 class="stat-value" id="statSales">—</h2>
+                    </div>
+                    <span class="trend-badge up" id="statInvCount">—</span>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-info">
+                        <p class="stat-label">Est. Profit (35%)</p>
+                        <h2 class="stat-value" id="statProfit">—</h2>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-info">
+                        <p class="stat-label">Customers Today</p>
+                        <h2 class="stat-value" id="statCustToday">—</h2>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-info">
+                        <p class="stat-label">Inventory Value</p>
+                        <h2 class="stat-value" id="statInvVal">—</h2>
+                    </div>
+                </div>
+            </section>
+
+            <div class="main-grid-layout">
+                <div class="left-column">
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Sales Trend (last 7 days)</h3>
+                        </div>
+                        <div class="chart-container-wrapper">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Sales</h3>
+                            <a href="billing.html" class="view-all-link">View All</a>
+                        </div>
+                        <table class="sales-table">
+                            <thead>
+                                <tr><th>Date</th><th>Customer</th><th>Items</th><th>Total</th></tr>
+                            </thead>
+                            <tbody id="recentSalesBody">
+                                <tr><td colspan="4" style="padding:30px;text-align:center;color:#94a3b8;">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="card stock-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Low Stock Alert</h3>
+                            <a href="inventory.html" class="view-all-link">View All</a>
+                        </div>
+                        <div id="lowStockBody" style="padding:0 24px 16px;">
+                            <div style="padding:20px 0;color:#94a3b8;font-size:.85rem;">Loading…</div>
+                        </div>
+                    </div>
+
+                    <div class="card admin-actions" data-role="admin,owner">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div style="padding: 0 25px 20px; display:flex; flex-direction:column; gap:10px;">
+                            <a href="inventory.html?new=1" class="primary-reorder-btn" style="text-align:center;text-decoration:none;display:block;">
+                                <i class="fas fa-plus"></i> Add Product
+                            </a>
+                            <a href="billing.html?new=1" class="primary-reorder-btn" style="text-align:center;text-decoration:none;display:block;background:#10b981;">
+                                <i class="fas fa-file-invoice"></i> New Invoice
+                            </a>
+                            <a href="customers.html?new=1" class="primary-reorder-btn" style="text-align:center;text-decoration:none;display:block;background:#8b5cf6;">
+                                <i class="fas fa-user-plus"></i> Add Customer
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    let salesChart = null;
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d.replace(' ', 'T')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function buildChart(weekly) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(78, 139, 255, 0.30)');
+        gradient.addColorStop(1, 'rgba(78, 139, 255, 0)');
+
+        // Pad to 7 days if back-end returns fewer
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().slice(0,10);
+            const hit = weekly.find(w => w.date === key);
+            days.push({ date: key, total: hit ? +hit.total : 0 });
+        }
+
+        const labels = days.map(d => new Date(d.date).toLocaleDateString('en-US', { weekday:'short' }));
+        const values = days.map(d => d.total);
+
+        if (salesChart) salesChart.destroy();
+        salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    borderColor: '#2563eb',
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#2563eb',
+                    pointBorderWidth: 2,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true,
+                         grid: { color: '#f0f0f0' },
+                         ticks: { callback: v => 'Rs ' + v, color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+
+    function renderLowStock(items) {
+        const el = document.getElementById('lowStockBody');
+        if (!items.length) {
+            el.innerHTML = '<div style="padding:20px 0;color:#94a3b8;font-size:.85rem;text-align:center;"><i class="fas fa-check-circle" style="color:#10b981;"></i> All stock levels healthy.</div>';
+            return;
+        }
+        el.innerHTML = items.map(i => `
+            <div class="stock-list-item">
+                <span class="item-name">${escapeHtml(i.name)}</span>
+                <span class="item-qty">${i.stock} left</span>
+                <a href="inventory.html" class="primary-reorder-btn" data-role="admin,owner"
+                   style="text-decoration:none;display:inline-block;">Reorder</a>
+            </div>
+        `).join('');
+        kasbpro_applyRoleUI();
+    }
+
+    function renderRecentSales(rows) {
+        const body = document.getElementById('recentSalesBody');
+        if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="4" style="padding:30px;text-align:center;color:#94a3b8;">No invoices yet.</td></tr>';
+            return;
+        }
+        body.innerHTML = rows.map(r => `
+            <tr>
+                <td>${fmtDate(r.created_at)}</td>
+                <td>${escapeHtml(r.customer || 'Walk-in')}</td>
+                <td style="font-size:.85rem;color:#64748b;">${escapeHtml((r.items || '').slice(0,50))}${(r.items||'').length>50?'…':''}</td>
+                <td class="amount-highlight">Rs ${(+r.total).toFixed(2)}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadDashboard() {
+        try {
+            const data = await api('/api/dashboard/stats');
+            const s = data.stats;
+            document.getElementById('statSales').textContent    = 'Rs ' + Math.round(s.today_sales);
+            document.getElementById('statInvCount').textContent = s.today_invoices + ' invoices';
+            document.getElementById('statProfit').textContent   = 'Rs ' + Math.round(s.profit);
+            document.getElementById('statCustToday').textContent= s.customers_today;
+            document.getElementById('statInvVal').textContent   = 'Rs ' + Math.round(s.inventory_value).toLocaleString();
+            buildChart(s.weekly_sales || []);
+            renderLowStock(s.low_stock || []);
+            renderRecentSales(s.recent_sales || []);
+        } catch (e) {
+            kasbpro_toast(e.message, 'err');
+        }
+    }
+
+    /* Backup action */
+    async function runBackup() {
+        try {
+            const r = await api('/api/system/backup', { method:'POST' });
+            kasbpro_toast('Backup saved: ' + r.file, 'ok');
+        } catch (e) { kasbpro_toast(e.message, 'err'); }
+    }
+
+    /* Boot */
+    (async () => {
+        const ok = await kasbpro_hydrateSession();
+        if (!ok) return kasbpro_requireAuth();
+        kasbpro_applyRoleUI();
+
+        const t = document.getElementById('mobileToggle');
+        const s = document.getElementById('sidebar');
+        if (t && s) t.addEventListener('click', () => s.classList.toggle('active'));
+
+        document.getElementById('navBackup').addEventListener('click', (e) => {
+            e.preventDefault(); runBackup();
+        });
+
+        loadDashboard();
+    })();
+    </script>
+</body>
+</html>
